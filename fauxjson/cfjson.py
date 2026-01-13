@@ -1,6 +1,5 @@
 import json
 import os
-from pathlib import Path
 from threading import Lock
 
 import fauxlogger as _log
@@ -65,3 +64,25 @@ def save_item(item, file: str, replace: bool = False, subdir: str = ""):
 
         with open(file_path, "w") as f:
             json.dump(existing_items, f, indent=2)
+
+
+def persist_wrap(func):
+    import inspect
+    import os
+    from functools import wraps
+
+    sig = inspect.signature(func)
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        export_dir = os.getenv("EXPORT_DIR")
+        if export_dir:
+            bound = sig.bind(*args, **kwargs)
+            bound.apply_defaults()
+
+            save_item(
+                file=func.__qualname__, item=dict(bound.arguments), subdir=export_dir
+            )
+        return func(*args, **kwargs)
+
+    return wrapper
