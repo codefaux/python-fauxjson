@@ -1,0 +1,3 @@
+build/**
+fauxjson.egg-info/**
+tests/__pycache__/**

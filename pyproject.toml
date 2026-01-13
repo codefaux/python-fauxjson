@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fauxjson"
+version = "0.1.2"
+dependencies = [ "fauxlogger @ git+https://github.com/codefaux/python-fauxlogger@main" ]
+[tool.pytest.ini_options]
+addopts = "-s"
+
+[project.optional-dependencies]
+test = [
+    "pytest>=9.0",
+]
