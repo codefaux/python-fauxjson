@@ -4,7 +4,7 @@ from threading import Lock
 
 import fauxlogger as _log
 
-item_lock = Lock()
+json_lock = Lock()
 DATA_DIR = os.getenv("DATA_DIR") or "./data"
 
 
@@ -13,57 +13,62 @@ def ensure_dir(directory: str):
         os.makedirs(directory)
 
 
-def load_item(file: str, remove_after: bool = False) -> dict | None:
-    file_path = os.path.join(DATA_DIR, file)
+def load_json(
+    file: str, delete_file_after_load: bool = False, subdir: str = ""
+) -> dict | None:
+    _dir = os.path.join(DATA_DIR, subdir)
+    file_path = os.path.join(_dir, file)
+    json_output = None
 
-    with item_lock:
+    with json_lock:
         if os.path.exists(file_path):
-            item = None
             with open(file_path, "r") as f:
                 try:
-                    item = json.load(f)
+                    json_output = json.load(f)
                 except json.JSONDecodeError:
                     _log.msg(f"Failed to decode JSON '{file_path}' ; returning None.")
-            if remove_after:
+            if delete_file_after_load:
                 os.remove(file_path)
 
-            return item
+    return json_output
 
 
-def delete_item_file(file: str):
-    file_path = os.path.join(DATA_DIR, file)
-
-    if os.path.exists(file_path):
-        os.remove(file_path)
-
-
-def save_item(item, file: str, replace: bool = False, subdir: str = ""):
+def save_json(
+    json_input, file: str, replace_file_contents: bool = False, subdir: str = ""
+):
     _dir = os.path.join(DATA_DIR, subdir)
     file_path = os.path.join(_dir, file)
 
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
-    with item_lock:
-        if not replace:
+    with json_lock:
+        if not replace_file_contents:
             existing_items = []
             if os.path.exists(file_path):
                 try:
                     with open(file_path, "r") as f:
-                        existing_items = json.load(f)
+                        existing_items = json_input.load(f)
                         if not isinstance(existing_items, list):
                             _log.msg(
                                 f"Warning: Expected list in {file}, got {type(existing_items)}. Overwriting."
                             )
                             existing_items = []
-                except json.JSONDecodeError:
+                except json_input.JSONDecodeError:
                     _log.msg(f"Warning: Failed to decode {file}. Overwriting.")
 
-            existing_items.append(item)
+            existing_items.append(json_input)
         else:
-            existing_items = item
+            existing_items = json_input
 
         with open(file_path, "w") as f:
-            json.dump(existing_items, f, indent=2)
+            json_input.dump(existing_items, f, indent=2)
+
+
+def delete_json_file(file: str):
+    file_path = os.path.join(DATA_DIR, file)
+
+    if os.path.exists(file_path):
+        os.remove(file_path)
 
 
 def persist_wrap(func):
@@ -80,8 +85,10 @@ def persist_wrap(func):
             bound = sig.bind(*args, **kwargs)
             bound.apply_defaults()
 
-            save_item(
-                file=func.__qualname__, item=dict(bound.arguments), subdir=export_dir
+            save_json(
+                file=func.__qualname__,
+                json_input=dict(bound.arguments),
+                subdir=export_dir,
             )
         return func(*args, **kwargs)
 
