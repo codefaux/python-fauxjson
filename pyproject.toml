@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fauxjson"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [ "fauxlogger @ git+https://github.com/codefaux/python-fauxlogger@main" ]
 [tool.pytest.ini_options]
 addopts = "-s"

@@ -13,9 +13,7 @@ def ensure_dir(directory: str):
         os.makedirs(directory)
 
 
-def load_json(
-    file: str, delete_file_after_load: bool = False, subdir: str = ""
-) -> dict | None:
+def load_json(file: str, delete_file_after_load: bool = False, subdir: str = ""):
     _dir = os.path.join(DATA_DIR, subdir)
     file_path = os.path.join(_dir, file)
     json_output = None
