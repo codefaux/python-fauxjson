@@ -45,13 +45,13 @@ def save_json(
             if os.path.exists(file_path):
                 try:
                     with open(file_path, "r") as f:
-                        existing_items = json_input.load(f)
+                        existing_items = json.load(f)
                         if not isinstance(existing_items, list):
                             _log.msg(
                                 f"Warning: Expected list in {file}, got {type(existing_items)}. Overwriting."
                             )
                             existing_items = []
-                except json_input.JSONDecodeError:
+                except json.JSONDecodeError:
                     _log.msg(f"Warning: Failed to decode {file}. Overwriting.")
 
             existing_items.append(json_input)
@@ -59,7 +59,7 @@ def save_json(
             existing_items = json_input
 
         with open(file_path, "w") as f:
-            json_input.dump(existing_items, f, indent=2)
+            json.dump(existing_items, f, indent=2)
 
 
 def delete_json_file(file: str):
