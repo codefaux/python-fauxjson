@@ -2,8 +2,6 @@ import json
 import os
 from threading import Lock
 
-import fauxlogger as _log
-
 json_lock = Lock()
 DATA_DIR = os.getenv("DATA_DIR") or "./data"
 
@@ -24,7 +22,7 @@ def load_json(file: str, delete_file_after_load: bool = False, subdir: str = "")
                 try:
                     json_output = json.load(f)
                 except json.JSONDecodeError:
-                    _log.msg(f"Failed to decode JSON '{file_path}' ; returning None.")
+                    print(f"Failed to decode JSON '{file_path}' ; returning None.")
             if delete_file_after_load:
                 os.remove(file_path)
 
@@ -47,12 +45,12 @@ def save_json(
                     with open(file_path, "r") as f:
                         existing_items = json.load(f)
                         if not isinstance(existing_items, list):
-                            _log.msg(
+                            print(
                                 f"Warning: Expected list in {file}, got {type(existing_items)}. Overwriting."
                             )
                             existing_items = []
                 except json.JSONDecodeError:
-                    _log.msg(f"Warning: Failed to decode {file}. Overwriting.")
+                    print(f"Warning: Failed to decode {file}. Overwriting.")
 
             existing_items.append(json_input)
         else:
